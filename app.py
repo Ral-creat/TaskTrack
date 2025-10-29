@@ -82,23 +82,36 @@ with tab1:
         else:
             return ''
     
-    # 🟢 PASTE THIS FIXED BLOCK BELOW ⬇️
-    if not display_df.empty:
-        # Ensure consistent date type for safety
-        if "Deadline" in display_df.columns:
-            display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
+   if not display_df.empty:
+    # Ensure consistent date type for safety
+    if "Deadline" in display_df.columns:
+        display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
+    display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
 
-        # Convert to clean date strings
-        display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
+    # Function for showing styled table
+    def show_table(df, label):
+        if df.empty:
+            st.write(f"**No {label.lower()}s available.**")
+        else:
+            try:
+                styled = df.style.applymap(color_status, subset=["Status"])
+                st.dataframe(styled, use_container_width=True)
+            except Exception:
+                st.dataframe(df, use_container_width=True)
 
-        # Apply color styling safely
-        try:
-            styled_df = display_df.style.applymap(color_status, subset=["Status"])
-            st.dataframe(styled_df, use_container_width=True)
-        except Exception:
-            st.dataframe(display_df, use_container_width=True)
-    else:
-        st.info("No tasks to display.")
+    # --- Separated tables ---
+    st.subheader("📘 Assignments")
+    show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
+
+    st.subheader("📗 Projects")
+    show_table(display_df[display_df["Type"] == "Project"], "Project")
+
+    st.subheader("📙 Activities")
+    show_table(display_df[display_df["Type"] == "Activity"], "Activity")
+
+else:
+    st.info("No tasks to display.")
+
 
 # --- Tab 2: Calendar View ---
 with tab2:
