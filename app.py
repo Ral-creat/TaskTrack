@@ -83,15 +83,15 @@ with tab1:
             return ''
     
       if not display_df.empty:
-        # Ensure consistent date type
+        # Ensure consistent date type for safety
         if "Deadline" in display_df.columns:
             display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
         display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
 
-        # Function to display styled tables
+        # Function for showing styled table
         def show_table(df, label):
             if df.empty:
-                st.caption(f"❌ No {label.lower()}s available.")
+                st.write(f"**No {label.lower()}s available.**")
             else:
                 try:
                     styled = df.style.applymap(color_status, subset=["Status"])
@@ -99,26 +99,24 @@ with tab1:
                 except Exception:
                     st.dataframe(df, use_container_width=True)
 
-        # --- Organized by type inside expandable sections ---
-        st.subheader("📚 Task Overview by Type")
+        # --- Separated tables ---
+        st.subheader("📘 Assignments")
+        show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
 
-        with st.expander("📘 Assignments", expanded=True):
-            show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
+        st.subheader("📗 Projects")
+        show_table(display_df[display_df["Type"] == "Project"], "Project")
 
-        with st.expander("📗 Projects", expanded=False):
-            show_table(display_df[display_df["Type"] == "Project"], "Project")
-
-        with st.expander("📙 Activities", expanded=False):
-            show_table(display_df[display_df["Type"] == "Activity"], "Activity")
+        st.subheader("📙 Activities")
+        show_table(display_df[display_df["Type"] == "Activity"], "Activity")
 
     else:
         st.info("No tasks to display.")
 
-    # --- Mark as completed section ---
-    st.subheader("✅ Mark Task as Completed")
+    # Mark as completed
+    st.subheader("Mark Task as Completed")
     pending_tasks = profile_df[profile_df["Status"] == "Pending"]
     task_to_complete = st.selectbox("Select Task", pending_tasks["Title"] if not pending_tasks.empty else [])
-
+    
     if st.button("Mark Completed") and task_to_complete:
         df.loc[df["Title"] == task_to_complete, "Status"] = "Completed"
         df.to_csv("tasks.csv", index=False)
