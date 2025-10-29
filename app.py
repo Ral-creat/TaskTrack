@@ -109,7 +109,10 @@ with tab2:
     if profile_df.empty:
         st.info("No tasks yet.")
     else:
+        # ✅ Safe datetime handling
+        profile_df["Deadline"] = pd.to_datetime(profile_df["Deadline"], errors="coerce")
         profile_df["Deadline_str"] = profile_df["Deadline"].dt.strftime("%Y-%m-%d")
+
         fig = px.scatter(
             profile_df,
             x="Deadline",
