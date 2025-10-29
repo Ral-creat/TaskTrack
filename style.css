@@ -1,38 +1,140 @@
-/* Sidebar header */
-h2 {
-    font-size: 20px;
-    font-weight: bold;
-    color: #1F77B4;
+/* ===== 🌸 GLOBAL STYLES ===== */
+body, .stApp {
+  background-color: #0d0d0d !important;
+  color: #f5f5f5 !important;
+  font-family: 'Poppins', sans-serif;
 }
 
-/* Page title */
-h1 {
-    font-size: 28px;
-    font-weight: bold;
-    color: #2A9D8F;
+h1, h2, h3, h4, h5 {
+  color: #ff69b4 !important;
+  font-weight: 600;
 }
 
-/* Buttons */
-button {
-    background-color: #E76F51;
-    color: white;
-    border-radius: 8px;
-    height: 3em;
-    width: 100%;
-    font-size: 16px;
-    font-weight: bold;
+.stMarkdown, .stText, .stTextInput, .stSelectbox label, .stTextArea label {
+  color: #ffffff !important;
 }
 
-/* Table */
-table {
-    border: 2px solid #264653;
-    border-radius: 8px;
+hr {
+  border: 1px solid #ff69b4 !important;
+  opacity: 0.3;
 }
 
-/* Status color coding */
-.pending {
-    background-color: #F4D35E !important; /* yellow */
+/* ===== 🌸 SIDEBAR ===== */
+section[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #000000, #111111);
+  border-right: 2px solid #ff69b4;
+  color: white !important;
 }
-.completed {
-    background-color: #52B788 !important; /* green */
+
+section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 {
+  color: #ff69b4 !important;
+  text-align: center;
+}
+
+.stButton>button {
+  background: #ff69b4 !important;
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.stButton>button:hover {
+  background: #ff85c1 !important;
+  transform: scale(1.05);
+}
+
+/* ===== 🌸 TABS (BUTTON STYLE) ===== */
+div[data-baseweb="tab-list"] {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  border: none !important;
+  margin-bottom: 20px;
+}
+
+button[data-baseweb="tab"] {
+  background: #1a1a1a;
+  color: #ff69b4;
+  border-radius: 12px;
+  border: 2px solid #ff69b4;
+  padding: 10px 18px;
+  transition: 0.3s ease;
+  font-weight: 500;
+}
+
+button[data-baseweb="tab"]:hover {
+  background: #ff69b4;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+  background: #ff69b4;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0px 0px 10px #ff69b4;
+}
+
+/* ===== 🌸 TABLE STYLES ===== */
+.stDataFrame {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+[data-testid="stDataFrame"] table {
+  background-color: #1c1c1c !important;
+  color: #fff !important;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+[data-testid="stDataFrame"] th {
+  background-color: #ff69b4 !important;
+  color: white !important;
+  text-align: center;
+  padding: 8px !important;
+}
+
+[data-testid="stDataFrame"] td {
+  text-align: center;
+  padding: 8px !important;
+}
+
+/* ===== 🌸 EXPANDER SECTIONS ===== */
+.streamlit-expanderHeader {
+  background-color: #ff69b4 !important;
+  color: white !important;
+  font-weight: 600;
+  border-radius: 10px !important;
+}
+
+.streamlit-expanderContent {
+  background-color: #1c1c1c !important;
+  border-radius: 0 0 10px 10px !important;
+  padding: 10px;
+}
+
+/* ===== 🌸 MISC ===== */
+.stDownloadButton>button {
+  background-color: #ff69b4 !important;
+  color: white !important;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  transition: 0.3s;
+}
+
+.stDownloadButton>button:hover {
+  background-color: #ff85c1 !important;
+  transform: scale(1.05);
+}
+
+.stAlert {
+  border-left: 5px solid #ff69b4 !important;
+  background: #1a1a1a !important;
 }
