@@ -62,17 +62,17 @@ tab1, tab2, tab3 = st.tabs(["Dashboard", "Calendar View", "Subject Schedule"])
 # --- Tab 1: Dashboard ---
 with tab1:
     st.header(f"{user_type} Dashboard")
-    
+
     # Filter tasks for current profile
     profile_df = df[df["Profile"] == user_type]
-    
+
     # Filter by status
     status_filter = st.selectbox("Filter by Status", ["All", "Pending", "Completed"])
     if status_filter != "All":
         display_df = profile_df[profile_df["Status"] == status_filter]
     else:
         display_df = profile_df.copy()
-    
+
     # Add color-coded status column for display
     def color_status(val):
         if val == "Pending":
@@ -81,17 +81,18 @@ with tab1:
             return 'background-color: #52B788; color:white'  # green
         else:
             return ''
-    
-     if not display_df.empty:
-        # Ensure consistent date type for safety
+
+    # ✅ FIXED INDENTATION STARTS HERE
+    if not display_df.empty:
+        # Ensure consistent date type
         if "Deadline" in display_df.columns:
             display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
         display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
 
-        # Function for showing styled table
+        # Function to display styled tables
         def show_table(df, label):
             if df.empty:
-                st.write(f"**No {label.lower()}s available.**")
+                st.caption(f"❌ No {label.lower()}s available.")
             else:
                 try:
                     styled = df.style.applymap(color_status, subset=["Status"])
@@ -99,29 +100,30 @@ with tab1:
                 except Exception:
                     st.dataframe(df, use_container_width=True)
 
-        # --- Separated tables ---
-        st.subheader("📘 Assignments")
-        show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
+        # --- Organized by type inside expandable sections ---
+        st.subheader("📚 Task Overview by Type")
 
-        st.subheader("📗 Projects")
-        show_table(display_df[display_df["Type"] == "Project"], "Project")
+        with st.expander("📘 Assignments", expanded=True):
+            show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
 
-        st.subheader("📙 Activities")
-        show_table(display_df[display_df["Type"] == "Activity"], "Activity")
+        with st.expander("📗 Projects", expanded=False):
+            show_table(display_df[display_df["Type"] == "Project"], "Project")
+
+        with st.expander("📙 Activities", expanded=False):
+            show_table(display_df[display_df["Type"] == "Activity"], "Activity")
 
     else:
         st.info("No tasks to display.")
 
-    # Mark as completed
-    st.subheader("Mark Task as Completed")
+    # --- Mark as completed section ---
+    st.subheader("✅ Mark Task as Completed")
     pending_tasks = profile_df[profile_df["Status"] == "Pending"]
     task_to_complete = st.selectbox("Select Task", pending_tasks["Title"] if not pending_tasks.empty else [])
-    
+
     if st.button("Mark Completed") and task_to_complete:
         df.loc[df["Title"] == task_to_complete, "Status"] = "Completed"
         df.to_csv("tasks.csv", index=False)
         st.success(f"'{task_to_complete}' marked as completed!")
-
 
 # --- Tab 2: Calendar View ---
 with tab2:
