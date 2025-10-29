@@ -146,9 +146,9 @@ with tab2:
         )
         fig.update_layout(yaxis={'categoryorder':'total ascending'}, height=600)
         st.plotly_chart(fig, use_container_width=True)
-    # --- Tab 3: Subject Schedule ---
+  # --- Tab 3: Subject Schedule ---
 with tab3:
-    st.header(f"{user_type} Subject Schedule")
+    st.header(f"{user_type} Subject Schedule 📚")
 
     # Load existing schedules
     try:
@@ -156,8 +156,9 @@ with tab3:
     except FileNotFoundError:
         sched_df = pd.DataFrame(columns=["Profile", "Subject", "Day", "Time", "Instructor", "Room"])
 
-    # Form to add new schedule
+    # --- Add Schedule Form ---
     with st.form("schedule_form", clear_on_submit=True):
+        st.subheader("Add New Class Schedule 📝")
         subject = st.text_input("Subject Name")
         day = st.selectbox("Day", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"])
         time = st.text_input("Time (e.g., 8:00 AM - 9:30 AM)")
@@ -176,16 +177,29 @@ with tab3:
             }
             sched_df = pd.concat([sched_df, pd.DataFrame([new_sched])], ignore_index=True)
             sched_df.to_csv("schedules.csv", index=False)
-            st.success(f"Added schedule for {subject} on {day}!")
+            st.success(f"✅ Added {subject} on {day}!")
 
-    # Display schedule for current user
+    # --- Filter user’s schedules ---
     user_sched = sched_df[sched_df["Profile"] == user_type]
 
     if not user_sched.empty:
-        st.subheader(f"{user_type} Class Schedule 📅")
-        st.dataframe(user_sched, use_container_width=True)
+        st.subheader(f"{user_type}'s Weekly Class Schedule 🗓️")
+
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+        for d in days:
+            day_sched = user_sched[user_sched["Day"] == d]
+            with st.expander(f"📅 {d}", expanded=True):
+                if not day_sched.empty:
+                    st.dataframe(
+                        day_sched[["Subject", "Time", "Instructor", "Room"]].reset_index(drop=True),
+                        use_container_width=True
+                    )
+                else:
+                    st.caption(f"😴 No class scheduled on {d}.")
     else:
-        st.info("No schedules added yet.")
+        st.info("No schedules added yet. Add one using the form above!")
+
 
 
 # --- Footer / Export ---
