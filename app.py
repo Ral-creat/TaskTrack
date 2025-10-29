@@ -7,8 +7,11 @@ st.set_page_config(page_title="TaskTrack", layout="wide")
 
 # --- Load external CSS ---
 def local_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    try:
+        with open(file_name) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    except FileNotFoundError:
+        pass
 
 local_css("style.css")
 
@@ -16,7 +19,7 @@ local_css("style.css")
 try:
     df = pd.read_csv("tasks.csv", parse_dates=["Deadline"])
 except FileNotFoundError:
-    df = pd.DataFrame(columns=["Profile","Type", "Title", "Subject/Project", "Deadline", "Notes", "Status"])
+    df = pd.DataFrame(columns=["Profile", "Type", "Title", "Subject/Project", "Deadline", "Notes", "Status"])
 
 # --- Sidebar: Select Profile ---
 st.sidebar.header("User Profile")
@@ -82,34 +85,64 @@ with tab1:
         else:
             return ''
 
+    # --- Display task tables with edit/delete ---
     if not display_df.empty:
-        # Ensure consistent date type
-        if "Deadline" in display_df.columns:
-            display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
+        display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
         display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
 
-        # Function to display styled tables
-        def show_table(df, label):
-            if df.empty:
-                st.caption(f"❌ No {label.lower()}s available.")
-            else:
-                try:
-                    styled = df.style.applymap(color_status, subset=["Status"])
-                    st.dataframe(styled, use_container_width=True)
-                except Exception:
-                    st.dataframe(df, use_container_width=True)
-
-        # --- Separated tables with h3 headers ---
         st.subheader("📚 Task Overview by Type")
 
-        st.markdown("### 📘 Assignments")
-        show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
+        # Separate by task types
+        for t_type in task_options:
+            st.markdown(f"### 📘 {t_type}s")
+            task_subset = display_df[display_df["Type"] == t_type]
 
-        st.markdown("### 📗 Projects")
-        show_table(display_df[display_df["Type"] == "Project"], "Project")
+            if task_subset.empty:
+                st.caption(f"❌ No {t_type.lower()}s available.")
+            else:
+                for i, row in task_subset.iterrows():
+                    with st.expander(f"📌 {row['Title']} ({row['Status']})"):
+                        st.write(f"**Subject/Project:** {row['Subject/Project']}")
+                        st.write(f"**Deadline:** {row['Deadline']}")
+                        st.write(f"**Notes:** {row['Notes']}")
+                        st.write(f"**Status:** {row['Status']}")
 
-        st.markdown("### 📙 Activities")
-        show_table(display_df[display_df["Type"] == "Activity"], "Activity")
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button(f"✏️ Edit '{row['Title']}'", key=f"edit_{i}"):
+                                st.session_state["edit_index"] = i
+                        with col2:
+                            if st.button(f"🗑️ Delete '{row['Title']}'", key=f"delete_{i}"):
+                                df = df.drop(index=i)
+                                df.to_csv("tasks.csv", index=False)
+                                st.warning(f"'{row['Title']}' deleted successfully!")
+                                st.rerun()
+
+        # --- Edit form (if triggered) ---
+        if "edit_index" in st.session_state:
+            edit_i = st.session_state["edit_index"]
+            st.markdown("---")
+            st.subheader("✏️ Edit Task")
+            edit_row = df.loc[edit_i]
+
+            with st.form("edit_task_form"):
+                new_type = st.selectbox("Task Type", task_options, index=task_options.index(edit_row["Type"]))
+                new_title = st.text_input("Title", edit_row["Title"])
+                new_subject = st.text_input("Subject/Project", edit_row["Subject/Project"])
+                new_deadline = st.date_input("Deadline", pd.to_datetime(edit_row["Deadline"]))
+                new_notes = st.text_area("Notes", edit_row["Notes"])
+                new_status = st.selectbox("Status", ["Pending", "Completed"], index=0 if edit_row["Status"] == "Pending" else 1)
+
+                save_edit = st.form_submit_button("Save Changes ✅")
+
+                if save_edit:
+                    df.loc[edit_i, ["Type", "Title", "Subject/Project", "Deadline", "Notes", "Status"]] = [
+                        new_type, new_title, new_subject, new_deadline, new_notes, new_status
+                    ]
+                    df.to_csv("tasks.csv", index=False)
+                    del st.session_state["edit_index"]
+                    st.success("Task updated successfully!")
+                    st.rerun()
 
     else:
         st.info("No tasks to display.")
@@ -118,11 +151,11 @@ with tab1:
     st.subheader("✅ Mark Task as Completed")
     pending_tasks = profile_df[profile_df["Status"] == "Pending"]
     task_to_complete = st.selectbox("Select Task", pending_tasks["Title"] if not pending_tasks.empty else [])
-
     if st.button("Mark Completed") and task_to_complete:
         df.loc[df["Title"] == task_to_complete, "Status"] = "Completed"
         df.to_csv("tasks.csv", index=False)
         st.success(f"'{task_to_complete}' marked as completed!")
+        st.rerun()
 
 # --- Tab 2: Calendar View ---
 with tab2:
@@ -133,7 +166,6 @@ with tab2:
     if profile_df.empty:
         st.info("No tasks yet.")
     else:
-        # ✅ Safe datetime handling
         profile_df["Deadline"] = pd.to_datetime(profile_df["Deadline"], errors="coerce")
         profile_df["Deadline_str"] = profile_df["Deadline"].dt.strftime("%Y-%m-%d")
 
@@ -146,7 +178,8 @@ with tab2:
         )
         fig.update_layout(yaxis={'categoryorder':'total ascending'}, height=600)
         st.plotly_chart(fig, use_container_width=True)
-  # --- Tab 3: Subject Schedule ---
+
+# --- Tab 3: Subject Schedule ---
 with tab3:
     st.header(f"{user_type} Subject Schedule 📚")
 
@@ -179,14 +212,11 @@ with tab3:
             sched_df.to_csv("schedules.csv", index=False)
             st.success(f"✅ Added {subject} on {day}!")
 
-    # --- Filter user’s schedules ---
+    # --- Display Schedules ---
     user_sched = sched_df[sched_df["Profile"] == user_type]
-
     if not user_sched.empty:
         st.subheader(f"{user_type}'s Weekly Class Schedule 🗓️")
-
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
         for d in days:
             day_sched = user_sched[user_sched["Day"] == d]
             with st.expander(f"📅 {d}", expanded=True):
@@ -199,8 +229,6 @@ with tab3:
                     st.caption(f"😴 No class scheduled on {d}.")
     else:
         st.info("No schedules added yet. Add one using the form above!")
-
-
 
 # --- Footer / Export ---
 st.markdown("---")
