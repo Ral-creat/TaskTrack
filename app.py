@@ -68,65 +68,103 @@ with st.sidebar.form("task_form", clear_on_submit=True):
 # --- Tabs ---
 tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Calendar View", "Subject Schedule", "Task History"])
 
-# --- Dashboard Tabs ---
-st.title("📋 Task Tracker Dashboard")
-
-tab1, tab2 = st.tabs(["🏠 Active Tasks", "📜 Completed History"])
-
+# --- Tab 1: Dashboard ---
 with tab1:
-    st.subheader("📌 Active Tasks")
-    active_df = df[df["Status"] != "Completed"]
+    st.header(f"{user_type} Dashboard")
 
-    if not active_df.empty:
-        st.dataframe(active_df, use_container_width=True)
+    profile_df = df[df["Profile"] == user_type]
+
+    # Filter by status
+    status_filter = st.selectbox("Filter by Status", ["All", "Pending"])
+    if status_filter != "All":
+        display_df = profile_df[profile_df["Status"] == status_filter]
     else:
-        st.info("No active tasks right now. Chill time 😎")
+        display_df = profile_df.copy()
 
-    # --- Mark as completed section ---
-    st.markdown("### ✅ Mark Task as Completed")
-    pending_tasks = active_df[active_df["Status"] == "Pending"]
-
-    task_to_complete = st.selectbox(
-        "Select Task to Complete",
-        pending_tasks["Title"] if not pending_tasks.empty else [],
-        key="complete_task_select"
-    )
-
-    if st.button("Mark Completed"):
-        if task_to_complete:
-            # Move task to completed history
-            completed_row = df[df["Title"] == task_to_complete].copy()
-            completed_row["Status"] = "Completed"
-
-            # Append to completed.csv
-            try:
-                completed_df = pd.read_csv("completed_tasks.csv")
-                completed_df = pd.concat([completed_df, completed_row], ignore_index=True)
-            except FileNotFoundError:
-                completed_df = completed_row
-
-            completed_df.to_csv("completed_tasks.csv", index=False)
-
-            # Remove from active list
-            df = df[df["Title"] != task_to_complete]
-            df.to_csv("tasks.csv", index=False)
-
-            st.success(f"'{task_to_complete}' marked completed and moved to history! 🎉")
-            st.rerun()
+    def color_status(val):
+        if val == "Pending":
+            return 'background-color: #F4D35E'
+        elif val == "Completed":
+            return 'background-color: #52B788; color:white'
         else:
-            st.warning("Please select a task to complete.")
+            return ''
 
-with tab2:
-    st.subheader("📜 Completed Task History")
+    if not display_df.empty:
+        display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
+        display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
 
-    try:
-        completed_df = pd.read_csv("completed_tasks.csv")
-        if not completed_df.empty:
-            st.dataframe(completed_df, use_container_width=True)
-        else:
-            st.info("No completed tasks yet. Keep grinding 💪")
-    except FileNotFoundError:
-        st.info("No completed tasks yet. Keep grinding 💪")
+        st.subheader("📚 Task Overview by Type")
+
+        for t_type in task_options:
+            st.markdown(f"### 📘 {t_type}s")
+            task_subset = display_df[display_df["Type"] == t_type]
+
+            if task_subset.empty:
+                st.caption(f"❌ No {t_type.lower()}s available.")
+            else:
+                for i, row in task_subset.iterrows():
+                    with st.expander(f"📌 {row['Title']} ({row['Status']})"):
+                        st.write(f"**Subject/Project:** {row['Subject/Project']}")
+                        st.write(f"**Deadline:** {row['Deadline']}")
+                        st.write(f"**Notes:** {row['Notes']}")
+                        st.write(f"**Status:** {row['Status']}")
+
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button(f"✏️ Edit '{row['Title']}'", key=f"edit_{i}"):
+                                st.session_state["edit_index"] = i
+                        with col2:
+                            if st.button(f"🗑️ Delete '{row['Title']}'", key=f"delete_{i}"):
+                                df = df.drop(index=i)
+                                df.to_csv("tasks.csv", index=False)
+                                st.warning(f"'{row['Title']}' deleted successfully!")
+                                st.rerun()
+
+        # --- Edit Form ---
+        if "edit_index" in st.session_state:
+            edit_i = st.session_state["edit_index"]
+            st.markdown("---")
+            st.subheader("✏️ Edit Task")
+            edit_row = df.loc[edit_i]
+
+            with st.form("edit_task_form"):
+                new_type = st.selectbox("Task Type", task_options, index=task_options.index(edit_row["Type"]))
+                new_title = st.text_input("Title", edit_row["Title"])
+                new_subject = st.text_input("Subject/Project", edit_row["Subject/Project"])
+                new_deadline = st.date_input("Deadline", pd.to_datetime(edit_row["Deadline"]))
+                new_notes = st.text_area("Notes", edit_row["Notes"])
+                new_status = st.selectbox("Status", ["Pending", "Completed"], index=0 if edit_row["Status"] == "Pending" else 1)
+                save_edit = st.form_submit_button("Save Changes ✅")
+
+                if save_edit:
+                    df.loc[edit_i, ["Type", "Title", "Subject/Project", "Deadline", "Notes", "Status"]] = [
+                        new_type, new_title, new_subject, new_deadline, new_notes, new_status
+                    ]
+                    df.to_csv("tasks.csv", index=False)
+                    del st.session_state["edit_index"]
+                    st.success("Task updated successfully!")
+                    st.rerun()
+
+    else:
+        st.info("No tasks to display.")
+
+    # --- Mark as completed ---
+    st.subheader("✅ Mark Task as Completed")
+    pending_tasks = profile_df[profile_df["Status"] == "Pending"]
+    task_to_complete = st.selectbox("Select Task", pending_tasks["Title"] if not pending_tasks.empty else [])
+    if st.button("Mark Completed") and task_to_complete:
+        # Move task to completed dataframe
+        task_row = df[df["Title"] == task_to_complete]
+        task_row["Status"] = "Completed"
+        completed_df = pd.concat([completed_df, task_row], ignore_index=True)
+        completed_df.to_csv("completed_tasks.csv", index=False)
+
+        # Remove from active list
+        df = df[df["Title"] != task_to_complete]
+        df.to_csv("tasks.csv", index=False)
+
+        st.success(f"'{task_to_complete}' marked as completed and moved to history! 🕓")
+        st.rerun()
 
 # --- Tab 2: Calendar View ---
 with tab2:
