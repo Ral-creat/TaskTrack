@@ -82,32 +82,23 @@ with tab1:
         else:
             return ''
     
-   if not display_df.empty:
-    # Ensure consistent date type for safety
-    if "Deadline" in display_df.columns:
-        display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
+    # 🟢 PASTE THIS FIXED BLOCK BELOW ⬇️
+    if not display_df.empty:
+        # Ensure consistent date type for safety
+        if "Deadline" in display_df.columns:
+            display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
 
-    # Convert to clean date strings
-    display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
+        # Convert to clean date strings
+        display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
 
-    # Apply color styling safely
-    try:
-        styled_df = display_df.style.applymap(color_status, subset=["Status"])
-        st.dataframe(styled_df, use_container_width=True)
-    except Exception:
-        st.dataframe(display_df, use_container_width=True)
-else:
-    st.info("No tasks to display.")
-
-    # Mark as completed
-    st.subheader("Mark Task as Completed")
-    pending_tasks = profile_df[profile_df["Status"]=="Pending"]
-    task_to_complete = st.selectbox("Select Task", pending_tasks["Title"] if not pending_tasks.empty else [])
-    
-    if st.button("Mark Completed") and task_to_complete:
-        df.loc[df["Title"]==task_to_complete, "Status"] = "Completed"
-        df.to_csv("tasks.csv", index=False)
-        st.success(f"'{task_to_complete}' marked as completed!")
+        # Apply color styling safely
+        try:
+            styled_df = display_df.style.applymap(color_status, subset=["Status"])
+            st.dataframe(styled_df, use_container_width=True)
+        except Exception:
+            st.dataframe(display_df, use_container_width=True)
+    else:
+        st.info("No tasks to display.")
 
 # --- Tab 2: Calendar View ---
 with tab2:
