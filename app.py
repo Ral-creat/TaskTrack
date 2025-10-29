@@ -57,7 +57,7 @@ with st.sidebar.form("task_form", clear_on_submit=True):
         st.success(f"{task_type} '{title}' added under {user_type} profile!")
 
 # --- Tabs ---
-tab1, tab2 = st.tabs(["Dashboard", "Calendar View"])
+tab1, tab2, tab3 = st.tabs(["Dashboard", "Calendar View", "Subject Schedule"])
 
 # --- Tab 1: Dashboard ---
 with tab1:
@@ -146,6 +146,47 @@ with tab2:
         )
         fig.update_layout(yaxis={'categoryorder':'total ascending'}, height=600)
         st.plotly_chart(fig, use_container_width=True)
+    # --- Tab 3: Subject Schedule ---
+with tab3:
+    st.header(f"{user_type} Subject Schedule")
+
+    # Load existing schedules
+    try:
+        sched_df = pd.read_csv("schedules.csv")
+    except FileNotFoundError:
+        sched_df = pd.DataFrame(columns=["Profile", "Subject", "Day", "Time", "Instructor", "Room"])
+
+    # Form to add new schedule
+    with st.form("schedule_form", clear_on_submit=True):
+        subject = st.text_input("Subject Name")
+        day = st.selectbox("Day", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"])
+        time = st.text_input("Time (e.g., 8:00 AM - 9:30 AM)")
+        instructor = st.text_input("Instructor Name")
+        room = st.text_input("Room / Location")
+        add_sched = st.form_submit_button("Add Schedule")
+
+        if add_sched:
+            new_sched = {
+                "Profile": user_type,
+                "Subject": subject,
+                "Day": day,
+                "Time": time,
+                "Instructor": instructor,
+                "Room": room
+            }
+            sched_df = pd.concat([sched_df, pd.DataFrame([new_sched])], ignore_index=True)
+            sched_df.to_csv("schedules.csv", index=False)
+            st.success(f"Added schedule for {subject} on {day}!")
+
+    # Display schedule for current user
+    user_sched = sched_df[sched_df["Profile"] == user_type]
+
+    if not user_sched.empty:
+        st.subheader(f"{user_type} Class Schedule 📅")
+        st.dataframe(user_sched, use_container_width=True)
+    else:
+        st.info("No schedules added yet.")
+
 
 # --- Footer / Export ---
 st.markdown("---")
