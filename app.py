@@ -82,7 +82,7 @@ with tab1:
         else:
             return ''
     
-      if not display_df.empty:
+     if not display_df.empty:
         # Ensure consistent date type for safety
         if "Deadline" in display_df.columns:
             display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
@@ -121,6 +121,7 @@ with tab1:
         df.loc[df["Title"] == task_to_complete, "Status"] = "Completed"
         df.to_csv("tasks.csv", index=False)
         st.success(f"'{task_to_complete}' marked as completed!")
+
 
 # --- Tab 2: Calendar View ---
 with tab2:
