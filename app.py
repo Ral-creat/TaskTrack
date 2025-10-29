@@ -82,10 +82,22 @@ with tab1:
         else:
             return ''
     
-    if not display_df.empty:
-        st.dataframe(display_df.style.applymap(color_status, subset=["Status"]).format({'Deadline':'{:%Y-%m-%d}'}))
-    else:
-        st.info("No tasks to display.")
+   if not display_df.empty:
+    # Ensure consistent date type for safety
+    if "Deadline" in display_df.columns:
+        display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
+
+    # Convert to clean date strings
+    display_df["Deadline"] = display_df["Deadline"].dt.strftime("%Y-%m-%d")
+
+    # Apply color styling safely
+    try:
+        styled_df = display_df.style.applymap(color_status, subset=["Status"])
+        st.dataframe(styled_df, use_container_width=True)
+    except Exception:
+        st.dataframe(display_df, use_container_width=True)
+else:
+    st.info("No tasks to display.")
 
     # Mark as completed
     st.subheader("Mark Task as Completed")
