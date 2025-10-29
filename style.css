@@ -1,38 +1,32 @@
 /* ===== 🌸 GLOBAL STYLES ===== */
 body, .stApp {
-  background-color: #0d0d0d !important;
-  color: #f5f5f5 !important;
+  background-color: #ffe6f2 !important; /* light pink background */
+  color: #333 !important;
   font-family: 'Poppins', sans-serif;
 }
 
+/* ===== 🌸 HEADERS ===== */
 h1, h2, h3, h4, h5 {
-  color: #ff69b4 !important;
-  font-weight: 600;
-}
-
-.stMarkdown, .stText, .stTextInput, .stSelectbox label, .stTextArea label {
-  color: #ffffff !important;
-}
-
-hr {
-  border: 1px solid #ff69b4 !important;
-  opacity: 0.3;
+  color: #d63384 !important; /* hot pink text */
+  font-weight: 700;
+  text-align: center !important;
+  margin-top: 10px !important;
+  margin-bottom: 15px !important;
 }
 
 /* ===== 🌸 SIDEBAR ===== */
 section[data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #000000, #111111);
-  border-right: 2px solid #ff69b4;
-  color: white !important;
+  background: linear-gradient(180deg, #ffb6c1, #ff69b4);
+  color: #fff !important;
 }
 
 section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 {
-  color: #ff69b4 !important;
+  color: white !important;
   text-align: center;
 }
 
 .stButton>button {
-  background: #ff69b4 !important;
+  background: #d63384 !important;
   color: white !important;
   border: none;
   border-radius: 10px;
@@ -42,7 +36,7 @@ section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 {
 }
 
 .stButton>button:hover {
-  background: #ff85c1 !important;
+  background: #ff66a3 !important;
   transform: scale(1.05);
 }
 
@@ -56,37 +50,39 @@ div[data-baseweb="tab-list"] {
 }
 
 button[data-baseweb="tab"] {
-  background: #1a1a1a;
-  color: #ff69b4;
+  background: #ffffff;
+  color: #d63384;
   border-radius: 12px;
-  border: 2px solid #ff69b4;
+  border: 2px solid #d63384;
   padding: 10px 18px;
   transition: 0.3s ease;
   font-weight: 500;
 }
 
 button[data-baseweb="tab"]:hover {
-  background: #ff69b4;
+  background: #d63384;
   color: #fff;
   transform: scale(1.05);
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
-  background: #ff69b4;
+  background: #d63384;
   color: white;
   font-weight: 700;
-  box-shadow: 0px 0px 10px #ff69b4;
+  box-shadow: 0px 0px 10px #ff80bf;
 }
 
 /* ===== 🌸 TABLE STYLES ===== */
 .stDataFrame {
   border-radius: 12px !important;
   overflow: hidden;
+  background-color: #fff !important;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
 [data-testid="stDataFrame"] table {
-  background-color: #1c1c1c !important;
-  color: #fff !important;
+  background-color: #ffffff !important;
+  color: #333 !important;
   border-collapse: collapse;
   width: 100%;
   font-size: 14px;
@@ -106,21 +102,22 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 /* ===== 🌸 EXPANDER SECTIONS ===== */
 .streamlit-expanderHeader {
-  background-color: #ff69b4 !important;
-  color: white !important;
+  background-color: #ffb6c1 !important;
+  color: #d63384 !important;
   font-weight: 600;
   border-radius: 10px !important;
+  text-align: center;
 }
 
 .streamlit-expanderContent {
-  background-color: #1c1c1c !important;
+  background-color: #fff !important;
   border-radius: 0 0 10px 10px !important;
   padding: 10px;
 }
 
 /* ===== 🌸 MISC ===== */
 .stDownloadButton>button {
-  background-color: #ff69b4 !important;
+  background-color: #d63384 !important;
   color: white !important;
   font-weight: 600;
   border: none;
@@ -135,6 +132,12 @@ button[data-baseweb="tab"][aria-selected="true"] {
 }
 
 .stAlert {
-  border-left: 5px solid #ff69b4 !important;
-  background: #1a1a1a !important;
+  border-left: 5px solid #d63384 !important;
+  background: #fff !important;
+  color: #d63384 !important;
+}
+
+hr {
+  border: 1px solid #ffb6c1 !important;
+  opacity: 0.5;
 }
