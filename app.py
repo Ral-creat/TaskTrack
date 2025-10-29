@@ -82,8 +82,7 @@ with tab1:
         else:
             return ''
 
-    # ✅ FIXED INDENTATION STARTS HERE
-        if not display_df.empty:
+    if not display_df.empty:
         # Ensure consistent date type
         if "Deadline" in display_df.columns:
             display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
@@ -100,17 +99,17 @@ with tab1:
                 except Exception:
                     st.dataframe(df, use_container_width=True)
 
-        # --- Organized by type inside expandable sections ---
+        # --- Separated tables with h3 headers ---
         st.subheader("📚 Task Overview by Type")
 
-        with st.expander("📘 Assignments", expanded=True):
-            show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
+        st.markdown("### 📘 Assignments")
+        show_table(display_df[display_df["Type"] == "Assignment"], "Assignment")
 
-        with st.expander("📗 Projects", expanded=False):
-            show_table(display_df[display_df["Type"] == "Project"], "Project")
+        st.markdown("### 📗 Projects")
+        show_table(display_df[display_df["Type"] == "Project"], "Project")
 
-        with st.expander("📙 Activities", expanded=False):
-            show_table(display_df[display_df["Type"] == "Activity"], "Activity")
+        st.markdown("### 📙 Activities")
+        show_table(display_df[display_df["Type"] == "Activity"], "Activity")
 
     else:
         st.info("No tasks to display.")
