@@ -1,0 +1,38 @@
+/* Sidebar header */
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1F77B4;
+}
+
+/* Page title */
+h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2A9D8F;
+}
+
+/* Buttons */
+button {
+    background-color: #E76F51;
+    color: white;
+    border-radius: 8px;
+    height: 3em;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Table */
+table {
+    border: 2px solid #264653;
+    border-radius: 8px;
+}
+
+/* Status color coding */
+.pending {
+    background-color: #F4D35E !important; /* yellow */
+}
+.completed {
+    background-color: #52B788 !important; /* green */
+}
