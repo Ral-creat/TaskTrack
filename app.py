@@ -83,7 +83,7 @@ with tab1:
             return ''
 
     # ✅ FIXED INDENTATION STARTS HERE
-    if not display_df.empty:
+        if not display_df.empty:
         # Ensure consistent date type
         if "Deadline" in display_df.columns:
             display_df["Deadline"] = pd.to_datetime(display_df["Deadline"], errors="coerce")
